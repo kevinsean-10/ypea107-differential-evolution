@@ -73,7 +73,7 @@ for it = 1:MaxIt
         
         A = randperm(nPop);
         
-        A(A =  = i) = [];
+        A(A == i) = [];
         
         a = A(1);
         b = A(2);
@@ -90,7 +90,7 @@ for it = 1:MaxIt
         z = zeros(size(x));
         j0 = randi([1 numel(x)]);
         for j = 1:numel(x)
-            if j =  = j0 || rand< = pCR
+            if j == j0 || rand< = pCR
                 z(j) = y(j);
             else
                 z(j) = x(j);
