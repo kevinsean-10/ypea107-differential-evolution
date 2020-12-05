@@ -27,7 +27,7 @@ nVar = 20;            % Number of Decision Variables
 VarSize = [1 nVar];   % Decision Variables Matrix Size
 
 VarMin = -5;          % Lower Bound of Decision Variables
-VarMax =  5;          % Upper Bound of Decision Variables
+VarMax = 5;          % Upper Bound of Decision Variables
 
 %% DE Parameters
 
@@ -90,7 +90,7 @@ for it = 1:MaxIt
         z = zeros(size(x));
         j0 = randi([1 numel(x)]);
         for j = 1:numel(x)
-            if j == j0 || rand< = pCR
+            if j == j0 || rand <= pCR
                 z(j) = y(j);
             else
                 z(j) = x(j);
