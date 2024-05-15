@@ -18,22 +18,36 @@ clc;
 clear;
 close all;
 
+dim = 2;
+boundaries = repmat([-10, 10], dim, 1);
+population_size = 250;
+max_iter = 250;
+scaling_factor = 0.8;
+crossover_prob = 0.2;
+seed = 0;
+
+rng(seed)
+
+
+dec = DE_class(boundaries,max_iter,population_size, ...
+                scaling_factor,crossover_prob,seed);
+
 %% Problem Definition
 
-CostFunction = @(x) Sphere(x);    % Cost Function
+% CostFunction = @(x) Sphere(x);    % Cost Function
 
-nVar = 20;            % Number of Decision Variables
+dim = 2;            % Number of Decision Variables
 
-VarSize = [1 nVar];   % Decision Variables Matrix Size
+VarSize = [1 dim];   % Decision Variables Matrix Size
 
-VarMin = -5;          % Lower Bound of Decision Variables
-VarMax = 5;          % Upper Bound of Decision Variables
+VarMin = -10;          % Lower Bound of Decision Variables
+VarMax = 10;          % Upper Bound of Decision Variables
 
 %% DE Parameters
 
-MaxIt = 1000;      % Maximum Number of Iterations
+MaxIt = 250;      % Maximum Number of Iterations
 
-nPop = 50;        % Population Size
+nPop = 250;        % Population Size
 
 beta_min = 0.2;   % Lower Bound of Scaling Factor
 beta_max = 0.8;   % Upper Bound of Scaling Factor
@@ -42,26 +56,28 @@ pCR = 0.2;        % Crossover Probability
 
 %% Initialization
 
-empty_individual.Position = [];
-empty_individual.Cost = [];
-
-BestSol.Cost = inf;
-
-pop = repmat(empty_individual, nPop, 1);
-
-for i = 1:nPop
-
-    pop(i).Position = unifrnd(VarMin, VarMax, VarSize);
-    
-    pop(i).Cost = CostFunction(pop(i).Position);
-    
-    if pop(i).Cost<BestSol.Cost
-        BestSol = pop(i);
-    end
-    
-end
-
+% empty_individual.Position = [];
+% empty_individual.Cost = [];
+% 
+% BestSol.Cost = inf;
+% 
+% pop = repmat(empty_individual, nPop, 1);
+% 
+% for i = 1:nPop
+% 
+%     pop(i).Position = unifrnd(VarMin, VarMax, VarSize);
+% 
+%     pop(i).Cost = dec.objective_function(pop(i).Position);
+% 
+%     if pop(i).Cost<BestSol.Cost
+%         BestSol = pop(i);
+%     end
+% 
+% end
+% 
 BestCost = zeros(MaxIt, 1);
+
+[pop,BestSol] = dec.generate_points(nPop,boundaries,seed);
 
 %% DE Main Loop
 
@@ -81,16 +97,17 @@ for it = 1:MaxIt
         
         % Mutation
         %beta = unifrnd(beta_min, beta_max);
-        beta = unifrnd(beta_min, beta_max, VarSize);
+        % beta = unifrnd(beta_min, beta_max, VarSize);
+        beta = repmat(scaling_factor,VarSize);
         y = pop(a).Position+beta.*(pop(b).Position-pop(c).Position);
-        y = max(y, VarMin);
-		y = min(y, VarMax);
+        y = max(y, boundaries(:,1)');
+        y = min(y, boundaries(:,2)');
 		
         % Crossover
         z = zeros(size(x));
         j0 = randi([1 numel(x)]);
         for j = 1:numel(x)
-            if j == j0 || rand <= pCR
+            if j == j0 || rand <= crossover_prob
                 z(j) = y(j);
             else
                 z(j) = x(j);
@@ -98,7 +115,7 @@ for it = 1:MaxIt
         end
         
         NewSol.Position = z;
-        NewSol.Cost = CostFunction(NewSol.Position);
+        NewSol.Cost = dec.objective_function(NewSol.Position);
         
         if NewSol.Cost<pop(i).Cost
             pop(i) = NewSol;
@@ -117,7 +134,7 @@ for it = 1:MaxIt
     disp(['Iteration ' num2str(it) ': Best Cost = ' num2str(BestCost(it))]);
     
 end
-
+% BestSol
 %% Show Results
 
 figure;
@@ -126,3 +143,14 @@ semilogy(BestCost, 'LineWidth', 2);
 xlabel('Iteration');
 ylabel('Best Cost');
 grid on;
+pause(5)
+close;
+%%
+clc;
+
+% Accessing all the 'Position' fields using arrayfun
+populationcell = arrayfun(@(x) x.Position, pop, 'UniformOutput', false);
+
+population = cell2mat(populationcell)
+
+
